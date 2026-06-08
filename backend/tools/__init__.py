@@ -128,7 +128,7 @@ TOOL_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "sql_query",
-            "description": "执行受控的只读SQL查询。优先使用预定义函数，仅在预定义函数无法满足需求时使用。仅支持SELECT查询。",
+            "description": "执行受控的只读SQL查询。优先使用预定义函数，仅在预定义函数无法满足需求时使用。支持 SELECT 查询和只读 PRAGMA（如 table_info、index_list、foreign_key_list 等）。写 PRAGMA 会被数据库层自动拦截。",
             "parameters": {
                 "type": "object",
                 "properties": {

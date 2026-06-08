@@ -2,10 +2,11 @@
 T8: 受控 SQL 查询工具。
 
 安全约束:
-- 只读连接 (PRAGMA query_only = ON)
+- 只读连接 (PRAGMA query_only = ON + URI mode=ro)
 - SQL 关键字黑名单
 - 查询超时 5 秒
 - 返回行数上限 1000
+- PRAGMA 语句允许执行，写 PRAGMA 由 SQLite 内核层 (query_only=ON) 拦截
 """
 
 import re
@@ -15,7 +16,7 @@ from db import get_db
 FORBIDDEN_KEYWORDS = [
     r"\bDROP\b", r"\bDELETE\b", r"\bUPDATE\b", r"\bINSERT\b",
     r"\bALTER\b", r"\bCREATE\b", r"\bATTACH\b", r"\bDETACH\b",
-    r"\bVACUUM\b", r"\bPRAGMA\b",
+    r"\bVACUUM\b",
 ]
 
 MAX_ROWS = 1000
@@ -31,14 +32,19 @@ def sql_query(query: str) -> dict:
     if not query_stripped:
         return {"error": "查询语句为空"}
 
-    # 安全检查
+    # 安全检查（仅对非 PRAGMA 语句进行关键字黑名单检查）
     query_upper = query_stripped.upper()
-    for kw in FORBIDDEN_KEYWORDS:
-        if re.search(kw, query_upper):
-            return {"error": f"此查询涉及不允许的操作 ({kw.strip('\\\\b')})，请使用预定义工具"}
 
-    if not query_upper.startswith("SELECT"):
-        return {"error": "仅支持 SELECT 查询"}
+    if query_upper.startswith("PRAGMA"):
+        # PRAGMA 语句：跳过黑名单检查，安全性由 SQLite 内核层 (mode=ro + query_only=ON) 保证
+        pass
+    else:
+        for kw in FORBIDDEN_KEYWORDS:
+            if re.search(kw, query_upper):
+                return {"error": f"此查询涉及不允许的操作 ({kw.strip('\\\\b')})，请使用预定义工具"}
+
+        if not query_upper.startswith("SELECT"):
+            return {"error": "仅支持 SELECT 和 PRAGMA 查询"}
 
     # 执行
     try:
