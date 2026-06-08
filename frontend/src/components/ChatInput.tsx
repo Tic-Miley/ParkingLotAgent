@@ -33,7 +33,7 @@ export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
   };
 
   return (
-    <div className="border-t border-gray-800 px-4 py-3 bg-surface-dark/95">
+    <div className="border-t border-[var(--color-border)] px-4 py-3 bg-[var(--color-bg)]/95">
       <div className="max-w-3xl mx-auto flex gap-3 items-end">
         <textarea
           ref={textareaRef}
@@ -43,8 +43,8 @@ export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
           placeholder="输入您的问题..."
           rows={1}
           disabled={isStreaming}
-          className="flex-1 resize-none rounded-xl bg-surface-input border border-gray-700 
-                     px-4 py-3 text-sm text-white placeholder-gray-500
+          className="flex-1 resize-none rounded-xl bg-[var(--color-input)] border border-[var(--color-border)]
+                     px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)]
                      focus:outline-none focus:border-warm-yellow/50 focus:ring-1 focus:ring-warm-yellow/20
                      disabled:opacity-50 transition-colors"
         />

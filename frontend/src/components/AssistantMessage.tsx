@@ -24,8 +24,8 @@ export function AssistantMessage({ message, onCopy }: AssistantMessageProps) {
 
         {/* Message content */}
         {message.content && (
-          <div className="bg-surface-card/40 border border-gray-700/30 rounded-2xl rounded-bl-md px-4 py-3">
-            <div className="markdown-body text-sm text-gray-200">
+          <div className="bg-[var(--color-surface)]/40 border border-[var(--color-border)]/30 rounded-2xl rounded-bl-md px-4 py-3">
+            <div className="markdown-body text-sm text-[var(--color-text-primary)]">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {message.content}
               </ReactMarkdown>
@@ -40,7 +40,7 @@ export function AssistantMessage({ message, onCopy }: AssistantMessageProps) {
             {!message.isStreaming && message.content && (
               <button
                 onClick={() => onCopy(message.content)}
-                className="mt-2 text-xs text-gray-600 hover:text-gray-400 transition-colors
+                className="mt-2 text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] transition-colors
                            opacity-0 group-hover:opacity-100"
               >
                 复制
@@ -51,11 +51,11 @@ export function AssistantMessage({ message, onCopy }: AssistantMessageProps) {
 
         {/* Empty streaming state */}
         {!message.content && message.isStreaming && (
-          <div className="bg-surface-card/40 border border-gray-700/30 rounded-2xl rounded-bl-md px-4 py-3">
+          <div className="bg-[var(--color-surface)]/40 border border-[var(--color-border)]/30 rounded-2xl rounded-bl-md px-4 py-3">
             <div className="flex gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-gray-600 animate-pulse-dot" style={{ animationDelay: '0s' }} />
-              <span className="w-2 h-2 rounded-full bg-gray-600 animate-pulse-dot" style={{ animationDelay: '0.2s' }} />
-              <span className="w-2 h-2 rounded-full bg-gray-600 animate-pulse-dot" style={{ animationDelay: '0.4s' }} />
+              <span className="w-2 h-2 rounded-full bg-[var(--color-text-tertiary)] animate-pulse-dot" style={{ animationDelay: '0s' }} />
+              <span className="w-2 h-2 rounded-full bg-[var(--color-text-tertiary)] animate-pulse-dot" style={{ animationDelay: '0.2s' }} />
+              <span className="w-2 h-2 rounded-full bg-[var(--color-text-tertiary)] animate-pulse-dot" style={{ animationDelay: '0.4s' }} />
             </div>
           </div>
         )}
@@ -71,7 +71,7 @@ export function AssistantMessage({ message, onCopy }: AssistantMessageProps) {
 
         {/* Stopped indicator */}
         {!message.isStreaming && !message.content && message.toolCalls.length > 0 && (
-          <div className="text-xs text-gray-500 mt-1">已中断</div>
+          <div className="text-xs text-[var(--color-text-tertiary)] mt-1">已中断</div>
         )}
       </div>
     </div>

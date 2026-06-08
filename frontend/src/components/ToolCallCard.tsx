@@ -26,11 +26,11 @@ export function ToolCallCard({ toolCall }: ToolCallCardProps) {
   return (
     <div
       className={`mb-2 text-xs rounded-lg border overflow-hidden transition-all duration-200 animate-slide-up
-        ${isError ? 'border-red-500/30 bg-red-500/5' : 'border-gray-700/50 bg-surface-card/40'}`}
+        ${isError ? 'border-red-500/30 bg-red-500/5' : 'border-[var(--color-border)]/50 bg-[var(--color-surface)]/40'}`}
     >
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-white/5 transition-colors"
+        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[var(--color-surface-hover)] transition-colors"
       >
         {/* Status icon */}
         {isRunning ? (
@@ -43,19 +43,19 @@ export function ToolCallCard({ toolCall }: ToolCallCardProps) {
           <span className="text-green-400">✓</span>
         )}
 
-        <span className={`flex-1 ${isError ? 'text-red-300' : 'text-gray-300'}`}>
+        <span className={`flex-1 ${isError ? 'text-red-300' : 'text-[var(--color-text-secondary)]'}`}>
           {isRunning ? `正在${label}...` : isError ? `${label}失败` : `${label}完成`}
         </span>
 
         {(toolCall.resultPreview || toolCall.error) && (
-          <span className="text-gray-600">
+          <span className="text-[var(--color-text-tertiary)]">
             <Chevron expanded={expanded} />
           </span>
         )}
       </button>
 
       {expanded && (
-        <div className="px-3 py-2 border-t border-gray-700/30 bg-black/20 font-mono text-xs text-gray-400">
+        <div className="px-3 py-2 border-t border-[var(--color-border)]/30 bg-[var(--color-surface-code)] font-mono text-xs text-[var(--color-text-secondary)]">
           {toolCall.error ? (
             <div className="text-red-400">{toolCall.error}</div>
           ) : toolCall.resultPreview ? (

@@ -1,17 +1,22 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
         warm: {
-          yellow: '#f0a500',
-          amber: '#e09610',
+          yellow: 'rgb(var(--color-accent-rgb) / <alpha-value>)',
+          amber: 'rgb(var(--color-accent-rgb) / <alpha-value>)',
         },
         surface: {
-          dark: '#1a1a2e',
-          card: '#222244',
-          input: '#2a2a40',
+          dark: 'rgb(var(--color-bg-rgb) / <alpha-value>)',
+          card: 'rgb(var(--color-surface-rgb) / <alpha-value>)',
+          input: 'rgb(var(--color-input-rgb) / <alpha-value>)',
+        },
+        brand: {
+          amber: 'rgb(var(--color-accent-rgb) / <alpha-value>)',
+          accent: 'rgb(var(--color-accent-rgb) / <alpha-value>)',
         },
       },
       fontFamily: {

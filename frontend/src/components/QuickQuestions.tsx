@@ -18,7 +18,7 @@ export function QuickQuestions({ onSelect, disabled }: QuickQuestionsProps) {
           onClick={() => onSelect(q.label)}
           disabled={disabled}
           className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm
-                     bg-surface-card border border-gray-700/50 text-gray-300
+                     bg-[var(--color-surface)] border border-[var(--color-border)]/50 text-[var(--color-text-secondary)]
                      hover:border-warm-yellow/40 hover:text-warm-yellow
                      disabled:opacity-40 disabled:cursor-not-allowed
                      transition-all duration-200"

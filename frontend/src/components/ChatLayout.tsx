@@ -12,7 +12,7 @@ export function ChatLayout() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-surface-dark">
+    <div className="flex flex-col h-screen bg-[var(--color-bg)]">
       <Header />
       <MessageList messages={messages} onCopy={handleCopy} />
       {messages.length === 0 && (
