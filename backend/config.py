@@ -15,6 +15,9 @@ DATABASE_PATH = os.environ.get("DATABASE_PATH", str(BASE_DIR / "data" / "parking
 # Ensure data directory exists
 os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
 
+# Thinking mode: "enabled" (default, higher reasoning) or "disabled" (faster response)
+THINKING_MODE = os.environ.get("THINKING_MODE", "enabled")
+
 # Agent config
 MAX_ITERATIONS = 8
 SQL_TIMEOUT_SECONDS = 5

@@ -129,6 +129,7 @@ async def agent_loop(
             tools=TOOL_SCHEMAS,
             tool_choice="auto",
             stream=False,
+            extra_body={"thinking": {"type": config.THINKING_MODE}},
         )
 
         assistant_msg = response.choices[0].message
@@ -193,6 +194,7 @@ async def agent_loop(
                 model=config.DEEPSEEK_MODEL,
                 messages=messages,
                 stream=True,
+                extra_body={"thinking": {"type": config.THINKING_MODE}},
             )
 
             full_response = ""
