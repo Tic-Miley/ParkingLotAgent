@@ -71,8 +71,13 @@ async def chat(request: ChatRequest):
                         while not queue.empty():
                             yield queue.get_nowait()
                         # 检查是否有未捕获的异常
-                        if task.exception():
-                            error_msg = f"event: error\ndata: {json.dumps({'code': 'AGENT_ERROR', 'message': '处理请求时遇到内部错误', 'retryable': False}, ensure_ascii=False)}\n\n"
+                        exc = task.exception()
+                        if exc is not None:
+                            # 记录异常到控制台日志
+                            import traceback
+                            print(f"[ERROR] agent_loop 异常: {type(exc).__name__}: {exc}", flush=True)
+                            traceback.print_exception(exc)
+                            error_msg = f"event: error\ndata: {json.dumps({'code': 'AGENT_ERROR', 'message': f'处理请求时遇到内部错误: {str(exc)}', 'retryable': False}, ensure_ascii=False)}\n\n"
                             yield error_msg
                         break
         except asyncio.CancelledError:

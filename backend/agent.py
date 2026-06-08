@@ -9,7 +9,7 @@ import time
 import datetime
 from typing import Any
 
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 import config
 from tools import TOOL_SCHEMAS, TOOL_EXECUTORS
@@ -70,9 +70,9 @@ SYSTEM_PROMPT = """你是一个停车场数据分析助手。你拥有以下能�
 """
 
 
-def _get_client() -> OpenAI:
-    """Create DeepSeek-compatible OpenAI client."""
-    return OpenAI(
+def _get_client() -> AsyncOpenAI:
+    """Create DeepSeek-compatible async OpenAI client."""
+    return AsyncOpenAI(
         api_key=config.DEEPSEEK_API_KEY,
         base_url=config.DEEPSEEK_BASE_URL,
         timeout=60.0,
@@ -123,7 +123,7 @@ async def agent_loop(
 
     for iteration in range(config.MAX_ITERATIONS):
         # 工具决策阶段（非流式）
-        response = client.chat.completions.create(
+        response = await client.chat.completions.create(
             model=config.DEEPSEEK_MODEL,
             messages=messages,
             tools=TOOL_SCHEMAS,
@@ -189,7 +189,7 @@ async def agent_loop(
 
         else:
             # 文本响应阶段：流式输出
-            stream = client.chat.completions.create(
+            stream = await client.chat.completions.create(
                 model=config.DEEPSEEK_MODEL,
                 messages=messages,
                 stream=True,
