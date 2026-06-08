@@ -12,8 +12,14 @@ export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
 
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px';
+      const el = textareaRef.current;
+      // 重置为 auto 以获取真实 scrollHeight
+      el.style.height = 'auto';
+      // border-box 下 scrollHeight 不含 border，需补偿
+      const style = getComputedStyle(el);
+      const borderTop = parseFloat(style.borderTopWidth) || 0;
+      const borderBottom = parseFloat(style.borderBottomWidth) || 0;
+      el.style.height = Math.min(el.scrollHeight + borderTop + borderBottom, 120) + 'px';
     }
   }, [input]);
 
@@ -43,10 +49,10 @@ export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
           placeholder="输入您的问题..."
           rows={1}
           disabled={isStreaming}
-          className="flex-1 resize-none rounded-xl bg-[var(--color-input)] border border-[var(--color-border)]
+          className="flex-1 resize-none overflow-y-auto rounded-xl bg-[var(--color-input)] border border-[var(--color-border)]
                      px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)]
                      focus:outline-none focus:border-warm-yellow/50 focus:ring-1 focus:ring-warm-yellow/20
-                     disabled:opacity-50 transition-colors"
+                     disabled:opacity-50 transition-colors chat-textarea"
         />
         {isStreaming ? (
           <button

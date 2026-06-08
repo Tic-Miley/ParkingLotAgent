@@ -122,6 +122,12 @@ body {
   background: var(--color-scrollbar-thumb-hover);
 }
 
+/* 输入框滚动条 — 上下内缩避让 rounded-xl 圆角 */
+.chat-textarea::-webkit-scrollbar-track {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
 /* ================================================================
    Markdown Styles
    ================================================================ */
