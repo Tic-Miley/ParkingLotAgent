@@ -49,7 +49,7 @@ export function MessageList({ messages, onCopy }: MessageListProps) {
 
   return (
     <div ref={containerRef} className="flex-1 overflow-y-auto py-4">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-[54rem] mx-auto">
         {messages.map(msg =>
           msg.role === 'user' ? (
             <UserMessage key={msg.id} message={msg} />

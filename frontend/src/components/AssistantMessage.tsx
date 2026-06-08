@@ -12,7 +12,7 @@ interface AssistantMessageProps {
 export function AssistantMessage({ message, onCopy }: AssistantMessageProps) {
   return (
     <div className="px-4 sm:px-6 mb-6 group animate-slide-up">
-      <div className="max-w-[85%] sm:max-w-[75%]">
+      <div className="w-full">
         {/* Tool calls */}
         {message.toolCalls.length > 0 && (
           <div className="mb-3">
@@ -24,7 +24,7 @@ export function AssistantMessage({ message, onCopy }: AssistantMessageProps) {
 
         {/* Message content */}
         {message.content && (
-          <div className="bg-[var(--color-surface)]/40 border border-[var(--color-border)]/30 rounded-2xl rounded-bl-md px-4 py-3">
+          <div className="border-l-2 border-warm-yellow/30 pl-4 py-1">
             <div className="markdown-body text-sm text-[var(--color-text-primary)]">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {message.content}
@@ -51,7 +51,7 @@ export function AssistantMessage({ message, onCopy }: AssistantMessageProps) {
 
         {/* Empty streaming state */}
         {!message.content && message.isStreaming && (
-          <div className="bg-[var(--color-surface)]/40 border border-[var(--color-border)]/30 rounded-2xl rounded-bl-md px-4 py-3">
+          <div className="border-l-2 border-warm-yellow/30 pl-4 py-1">
             <div className="flex gap-1.5">
               <span className="w-2 h-2 rounded-full bg-[var(--color-text-tertiary)] animate-pulse-dot" style={{ animationDelay: '0s' }} />
               <span className="w-2 h-2 rounded-full bg-[var(--color-text-tertiary)] animate-pulse-dot" style={{ animationDelay: '0.2s' }} />
