@@ -17,72 +17,76 @@ const LIGHT_TEXT_SECONDARY = '#6b6560';
 const LIGHT_BORDER = '#d9d4cc';
 const LIGHT_TOOLTIP_BG = 'rgba(255, 255, 255, 0.95)';
 
+type PlainObject = Record<string, unknown>;
+
+/** Patch a single axis object (not array) with light-mode colors */
+function patchSingleAxis(axis: PlainObject): PlainObject {
+  const patched = { ...axis };
+  if (patched.axisLabel && typeof patched.axisLabel === 'object') {
+    patched.axisLabel = { ...(patched.axisLabel as PlainObject), color: LIGHT_TEXT_SECONDARY };
+  }
+  if (patched.axisLine && typeof patched.axisLine === 'object') {
+    const line = patched.axisLine as PlainObject;
+    patched.axisLine = {
+      ...line,
+      lineStyle: { ...(line.lineStyle as PlainObject || {}), color: LIGHT_BORDER },
+    };
+  }
+  // Y-axis only
+  if (patched.splitLine && typeof patched.splitLine === 'object') {
+    const sl = patched.splitLine as PlainObject;
+    patched.splitLine = {
+      ...sl,
+      lineStyle: { ...(sl.lineStyle as PlainObject || {}), color: LIGHT_BORDER },
+    };
+  }
+  return patched;
+}
+
 function adaptChartOption(option: Record<string, unknown>, theme: 'dark' | 'light'): Record<string, unknown> {
   if (theme === 'dark') return option;
 
-  const isLight = theme === 'light';
-  const adapted: Record<string, unknown> = { ...option };
-
-  // Helper to safely patch nested objects
-  const patch = (obj: Record<string, unknown>, key: string, patcher: (v: Record<string, unknown>) => void) => {
-    if (obj[key] && typeof obj[key] === 'object') {
-      const copy = { ...(obj[key] as Record<string, unknown>) };
-      patcher(copy);
-      adapted[key] = copy;
-    }
-  };
+  const adapted: PlainObject = { ...option };
 
   // Title
-  patch(adapted, 'title', v => {
-    const ts = { ...(v.textStyle as Record<string, unknown> || {}), color: LIGHT_TEXT_PRIMARY };
-    adapted.title = { ...(adapted.title as Record<string, unknown> || {}), textStyle: ts };
-  });
-
-  // Legend
-  patch(adapted, 'legend', v => {
-    const ts = { ...(v.textStyle as Record<string, unknown> || {}), color: LIGHT_TEXT_SECONDARY };
-    adapted.legend = { ...(adapted.legend as Record<string, unknown> || {}), textStyle: ts };
-  });
-
-  // Tooltip
-  patch(adapted, 'tooltip', v => {
-    const ts = { ...(v.textStyle as Record<string, unknown> || {}), color: LIGHT_TEXT_PRIMARY };
-    adapted.tooltip = {
-      ...(adapted.tooltip as Record<string, unknown> || {}),
-      backgroundColor: LIGHT_TOOLTIP_BG,
-      borderColor: LIGHT_BORDER,
-      textStyle: ts,
-    };
-  });
-
-  // X Axis
-  if (adapted.xAxis && typeof adapted.xAxis === 'object') {
-    const xAxis = { ...(adapted.xAxis as Record<string, unknown>) };
-    if (xAxis.axisLabel && typeof xAxis.axisLabel === 'object') {
-      xAxis.axisLabel = { ...(xAxis.axisLabel as Record<string, unknown>), color: LIGHT_TEXT_SECONDARY };
-    }
-    if (xAxis.axisLine && typeof xAxis.axisLine === 'object') {
-      xAxis.axisLine = {
-        ...(xAxis.axisLine as Record<string, unknown>),
-        lineStyle: { ...((xAxis.axisLine as Record<string, unknown>).lineStyle as Record<string, unknown> || {}), color: LIGHT_BORDER },
-      };
-    }
-    adapted.xAxis = xAxis;
+  if (adapted.title && typeof adapted.title === 'object') {
+    const t = adapted.title as PlainObject;
+    adapted.title = { ...t, textStyle: { ...(t.textStyle as PlainObject || {}), color: LIGHT_TEXT_PRIMARY } };
   }
 
-  // Y Axis
-  if (adapted.yAxis && typeof adapted.yAxis === 'object') {
-    const yAxis = { ...(adapted.yAxis as Record<string, unknown>) };
-    if (yAxis.axisLabel && typeof yAxis.axisLabel === 'object') {
-      yAxis.axisLabel = { ...(yAxis.axisLabel as Record<string, unknown>), color: LIGHT_TEXT_SECONDARY };
+  // Legend
+  if (adapted.legend && typeof adapted.legend === 'object') {
+    const l = adapted.legend as PlainObject;
+    adapted.legend = { ...l, textStyle: { ...(l.textStyle as PlainObject || {}), color: LIGHT_TEXT_SECONDARY } };
+  }
+
+  // Tooltip
+  if (adapted.tooltip && typeof adapted.tooltip === 'object') {
+    const tt = adapted.tooltip as PlainObject;
+    adapted.tooltip = {
+      ...tt,
+      backgroundColor: LIGHT_TOOLTIP_BG,
+      borderColor: LIGHT_BORDER,
+      textStyle: { ...(tt.textStyle as PlainObject || {}), color: LIGHT_TEXT_PRIMARY },
+    };
+  }
+
+  // X Axis — handle both single object and array
+  if (adapted.xAxis) {
+    if (Array.isArray(adapted.xAxis)) {
+      adapted.xAxis = adapted.xAxis.map(a => patchSingleAxis(a as PlainObject));
+    } else if (typeof adapted.xAxis === 'object') {
+      adapted.xAxis = patchSingleAxis(adapted.xAxis as PlainObject);
     }
-    if (yAxis.splitLine && typeof yAxis.splitLine === 'object') {
-      yAxis.splitLine = {
-        ...(yAxis.splitLine as Record<string, unknown>),
-        lineStyle: { ...((yAxis.splitLine as Record<string, unknown>).lineStyle as Record<string, unknown> || {}), color: LIGHT_BORDER },
-      };
+  }
+
+  // Y Axis — handle both single object and array
+  if (adapted.yAxis) {
+    if (Array.isArray(adapted.yAxis)) {
+      adapted.yAxis = adapted.yAxis.map(a => patchSingleAxis(a as PlainObject));
+    } else if (typeof adapted.yAxis === 'object') {
+      adapted.yAxis = patchSingleAxis(adapted.yAxis as PlainObject);
     }
-    adapted.yAxis = yAxis;
   }
 
   return adapted;
