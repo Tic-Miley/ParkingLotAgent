@@ -3,45 +3,9 @@
 @tailwind utilities;
 
 /* ================================================================
-   Design Tokens — 深色模式 (默认)
+   Design Tokens — 浅色模式 (默认)
    ================================================================ */
 :root {
-  --color-bg: #0f0f1a;
-  --color-bg-rgb: 15 15 26;
-  --color-surface: #1a1a2e;
-  --color-surface-rgb: 26 26 46;
-  --color-surface-alt: #222244;
-  --color-surface-alt-rgb: 34 34 68;
-  --color-input: #2a2a40;
-  --color-input-rgb: 42 42 64;
-  --color-border: #2a2a5a;
-  --color-border-rgb: 42 42 90;
-  --color-border-hover: #3a3a6a;
-  --color-border-hover-rgb: 58 58 106;
-  --color-text-primary: #e2e8f0;
-  --color-text-primary-rgb: 226 232 240;
-  --color-text-secondary: #94a3b8;
-  --color-text-secondary-rgb: 148 163 184;
-  --color-text-tertiary: #64748b;
-  --color-text-tertiary-rgb: 100 116 139;
-  --color-accent: #f0a500;
-  --color-accent-rgb: 240 165 0;
-  --color-accent-soft: rgba(240, 165, 0, 0.15);
-  --color-code-bg: #1e1e36;
-  --color-shadow: 0 0 0 / 0.3;
-  --color-markdown-heading: #f0a500;
-  --color-scrollbar-thumb: #3a3a5c;
-  --color-scrollbar-thumb-hover: #4a4a6c;
-  --color-surface-hover: rgba(255, 255, 255, 0.05);
-  --color-surface-code: rgba(0, 0, 0, 0.2);
-
-  color-scheme: dark;
-}
-
-/* ================================================================
-   Design Tokens — 浅色模式
-   ================================================================ */
-:root.light {
   --color-bg: #faf8f5;
   --color-bg-rgb: 250 248 245;
   --color-surface: #ffffff;
@@ -72,6 +36,42 @@
   --color-surface-code: rgba(0, 0, 0, 0.04);
 
   color-scheme: light;
+}
+
+/* ================================================================
+   Design Tokens — 深色模式
+   ================================================================ */
+:root.dark {
+  --color-bg: #0f0f1a;
+  --color-bg-rgb: 15 15 26;
+  --color-surface: #1a1a2e;
+  --color-surface-rgb: 26 26 46;
+  --color-surface-alt: #222244;
+  --color-surface-alt-rgb: 34 34 68;
+  --color-input: #2a2a40;
+  --color-input-rgb: 42 42 64;
+  --color-border: #2a2a5a;
+  --color-border-rgb: 42 42 90;
+  --color-border-hover: #3a3a6a;
+  --color-border-hover-rgb: 58 58 106;
+  --color-text-primary: #e2e8f0;
+  --color-text-primary-rgb: 226 232 240;
+  --color-text-secondary: #94a3b8;
+  --color-text-secondary-rgb: 148 163 184;
+  --color-text-tertiary: #64748b;
+  --color-text-tertiary-rgb: 100 116 139;
+  --color-accent: #f0a500;
+  --color-accent-rgb: 240 165 0;
+  --color-accent-soft: rgba(240, 165, 0, 0.15);
+  --color-code-bg: #1e1e36;
+  --color-shadow: 0 0 0 / 0.3;
+  --color-markdown-heading: #f0a500;
+  --color-scrollbar-thumb: #3a3a5c;
+  --color-scrollbar-thumb-hover: #4a4a6c;
+  --color-surface-hover: rgba(255, 255, 255, 0.05);
+  --color-surface-code: rgba(0, 0, 0, 0.2);
+
+  color-scheme: dark;
 }
 
 /* ================================================================

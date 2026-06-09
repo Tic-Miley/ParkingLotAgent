@@ -64,15 +64,10 @@ def validate_chart_option(option: dict[str, Any]) -> tuple[str, int]:
 def auto_fix_option(option: dict[str, Any], chart_type: str) -> dict[str, Any]:
     """
     自动修复常见的 ECharts option 问题。
-    - 补充默认颜色
     - 确保 tooltip 存在
     - 饼图设置默认 radius
     """
     option = dict(option)  # 浅拷贝
-
-    # 默认颜色
-    if "color" not in option:
-        option["color"] = CHART_COLORS
 
     # tooltip
     if "tooltip" not in option:

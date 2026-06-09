@@ -45,7 +45,7 @@ SYSTEM_PROMPT = """你是一个停车场数据分析助手。你拥有以下能�
 - title.text 简洁明了
 - 饼图使用 radius: "60%" 环形样式
 - 折线图使用 smooth: true 平滑曲线
-- 颜色使用 ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
+- 图表配色由前端主题系统自动管理，无需在 option 中指定 color 字段
 - tooltip 始终包含
 - 不需要 legend（数据类别少）
 
