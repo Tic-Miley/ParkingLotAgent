@@ -20,8 +20,10 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"Noto Sans SC"', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
-        mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
+        // sans: ['"Noto Sans SC"', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
+        sans: ['"Segoe UI"', '"Terminal Symbol"', '"Twemoji Mozilla"', 'sans-serif'],
+        // mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
+        mono: ['"JetBrains Mono"', '"Terminal Symbol"', '"Twemoji Mozilla"', 'monospace'],
       },
       animation: {
         'pulse-dot': 'pulse-dot 1.4s ease-in-out infinite',
