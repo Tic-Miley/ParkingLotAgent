@@ -99,17 +99,13 @@ npm run dev
 
 ## 工具体系
 
-| 工具 | 功能 |
-|------|------|
-| `get_current_vacancy` | 查询当前空余车位数和占用情况 |
-| `get_nev_ratio` | 查询新能源车占比 |
-| `get_trend` | 查询停车趋势（含7日移动平均） |
-| `get_floor_status` | 查询楼层占用情况 |
-| `get_hourly_distribution` | 查询时段进出分布 |
-| `get_vehicle_detail` | 按车牌查询车辆详情 |
-| `get_summary_stats` | 查询汇总统计 |
-| `sql_query` | 受控只读 SQL 查询 |
-| `render_chart` | 生成 ECharts 图表 |
+| 工具 | 类型 | 功能 |
+|------|------|------|
+| `get_config` | 配置查询 | 获取停车场全局配置 |
+| `query_aggregation` | 聚合查询 | 通用参数化聚合（核心工具，覆盖90%场景） |
+| `get_vehicle` | 个体查询 | 按车牌查询车辆详情 |
+| `render_chart` | 图表渲染 | 生成 ECharts 图表（饼图/折线图/柱状图） |
+| `sql_query` | SQL兜底 | 受控只读 SQL 查询 |
 
 ## 数据说明
 
