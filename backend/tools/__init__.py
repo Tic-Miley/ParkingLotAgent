@@ -25,6 +25,7 @@ TOOL_SCHEMAS = [
                 "type": "object",
                 "properties": {},
                 "required": [],
+                "additionalProperties": False,
             },
         },
     },
@@ -51,7 +52,6 @@ TOOL_SCHEMAS = [
                     "group_by": {
                         "type": "string",
                         "enum": [
-                            None,
                             "vehicle_type",
                             "floor",
                             "date",
@@ -60,24 +60,24 @@ TOOL_SCHEMAS = [
                             "month",
                         ],
                         "description": (
-                            "分组维度：null=全局聚合, vehicle_type=按能源类型, "
-                            "floor=按楼层, date=按日, hour=按小时, "
-                            "day_of_week=按星期几, month=按月。"
-                            "active_only=true 时仅支持 null/vehicle_type/floor。"
+                            "分组维度：vehicle_type=按能源类型, floor=按楼层, "
+                            "date=按日, hour=按小时, day_of_week=按星期几, month=按月。"
+                            "不传此参数则为全局聚合。"
+                            "active_only=true 时仅支持 vehicle_type 和 floor。"
                         ),
                     },
                     "date_from": {
                         "type": "string",
                         "description": (
-                            "起始日期 YYYY-MM-DD。仅 active_only=false 时有效，"
-                            "默认为 30 天前。"
+                            "起始日期，格式 YYYY-MM-DD（如 2026-06-01）。"
+                            "必须显式传入绝对日期。仅 active_only=false 时有效。"
                         ),
                     },
                     "date_to": {
                         "type": "string",
                         "description": (
-                            "结束日期 YYYY-MM-DD。仅 active_only=false 时有效，"
-                            "默认为今天。"
+                            "结束日期，格式 YYYY-MM-DD（如 2026-06-10）。"
+                            "必须显式传入绝对日期。仅 active_only=false 时有效。"
                         ),
                     },
                     "include_duration": {
@@ -88,6 +88,7 @@ TOOL_SCHEMAS = [
                     },
                 },
                 "required": [],
+                "additionalProperties": False,
             },
         },
     },
@@ -101,10 +102,14 @@ TOOL_SCHEMAS = [
                 "properties": {
                     "plate": {
                         "type": "string",
-                        "description": "车牌号，如 京A12345",
+                        "description": (
+                            "车牌号，格式为省份缩写+字母+数字（如 京A12345、沪B67890），"
+                            "必填，通常为 7-8 位字符"
+                        ),
                     },
                 },
                 "required": ["plate"],
+                "additionalProperties": False,
             },
         },
     },
@@ -154,6 +159,7 @@ TOOL_SCHEMAS = [
                     },
                 },
                 "required": ["query"],
+                "additionalProperties": False,
             },
         },
     },
@@ -171,6 +177,7 @@ TOOL_SCHEMAS = [
                     },
                 },
                 "required": ["option"],
+                "additionalProperties": False,
             },
         },
     },
