@@ -1,10 +1,16 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Message, ToolCallEvent, ChartData, generateId } from '../types/chat';
 
 export function useChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const conversationIdRef = useRef<string>(generateId());
+  const messagesRef = useRef<Message[]>([]);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isStreaming) return;
@@ -35,11 +41,15 @@ export function useChat() {
     const controller = new AbortController();
     abortRef.current = controller;
 
+    // 提取最近10轮历史（20条消息），转换为 {role, content} 格式
+    const recentMessages = messagesRef.current.slice(-20);
+    const history = recentMessages.map(m => ({ role: m.role, content: m.content }));
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: text, conversation_id: conversationIdRef.current, history }),
         signal: controller.signal,
       });
 

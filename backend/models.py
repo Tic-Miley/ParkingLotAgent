@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 class ChatRequest(BaseModel):
     message: str
     conversation_id: Optional[str] = None
+    history: Optional[list[dict]] = None  # 多轮对话历史 [{role, content}, ...]
 
 
 # ── SSE Events ────────────────────────────────────────

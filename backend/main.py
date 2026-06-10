@@ -55,6 +55,7 @@ async def chat(request: ChatRequest):
         task = asyncio.create_task(
             agent_loop(
                 user_message=request.message,
+                history=request.history,
                 send_sse=send_sse,
             )
         )
