@@ -21,6 +21,14 @@ FORBIDDEN_KEYWORDS = [
 
 MAX_ROWS = 1000
 
+SCHEMA_HINT = (
+    "可用表及字段:\n"
+    "- parking_lot_config: id, name, total_spots, floors, spots_per_floor, hourly_rate\n"
+    "- vehicle_record: id, plate, vehicle_type(ICE/BEV/PHEV/HEV), "
+    "entry_time, exit_time(NULL=在场), entry_floor, entry_spot\n"
+    "可用索引: idx_entry_time, idx_exit_time, idx_vehicle_type, idx_plate, idx_active"
+)
+
 
 def sql_query(query: str) -> dict:
     """
@@ -73,4 +81,20 @@ def sql_query(query: str) -> dict:
             }
 
     except Exception as e:
-        return {"error": f"查询执行失败: {str(e)}"}
+        error_msg = str(e)
+        hint = None
+        error_lower = error_msg.lower()
+
+        if "no such" in error_lower:
+            hint = SCHEMA_HINT
+        elif "syntax error" in error_lower:
+            hint = "请检查SQL语法: 确保关键字拼写正确、括号匹配、字符串用单引号"
+        elif "ambiguous column" in error_lower:
+            hint = "列名在多个表中存在，请使用 table.column 格式明确指定"
+
+        return {
+            "error": "SQL执行失败",
+            "detail": error_msg,
+            **({"hint": hint} if hint else {}),
+            "query": query,
+        }

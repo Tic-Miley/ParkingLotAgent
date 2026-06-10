@@ -10,7 +10,7 @@ v2 变更 (2026-06-10):
 
 from tools.parking import get_config, get_vehicle
 from tools.aggregation import query_aggregation
-from tools.sql_tool import sql_query
+from tools.sql_tool import sql_query, SCHEMA_HINT
 from tools.chart_tool import render_chart
 
 # ── Tool Schemas (OpenAI function-calling format) ─────────
@@ -113,9 +113,37 @@ TOOL_SCHEMAS = [
         "function": {
             "name": "sql_query",
             "description": (
-                "执行受控的只读SQL查询。优先使用 query_aggregation 等预定义工具，"
-                "仅在预定义工具无法满足需求时使用（如二维交叉分组）。"
-                "支持 SELECT 查询和只读 PRAGMA。"
+                "执行受控的只读SQL查询。仅当 query_aggregation 无法满足需求时使用。\n\n"
+                "## 典型降级场景\n"
+                "- 二维交叉分组: GROUP BY a, b\n"
+                "- 子查询: WHERE x > (SELECT AVG(...))\n"
+                "- 窗口函数: ROW_NUMBER() OVER (...)\n"
+                "- HAVING 过滤: HAVING COUNT(*) > N\n"
+                "- 自定义 ORDER BY LIMIT\n\n"
+                "## 数据库Schema\n"
+                "parking_lot_config(id, name, total_spots, floors, spots_per_floor, hourly_rate)\n"
+                "vehicle_record(\n"
+                "  id, plate, vehicle_type, entry_time, exit_time, entry_floor, entry_spot\n"
+                ")\n"
+                "  - vehicle_type 取值: 'ICE','BEV','PHEV','HEV'\n"
+                "  - exit_time IS NULL = 车辆在场\n\n"
+                "## 可用索引\n"
+                "idx_entry_time(entry_time), idx_exit_time(exit_time),\n"
+                "idx_vehicle_type(vehicle_type), idx_plate(plate),\n"
+                "idx_active(entry_time WHERE exit_time IS NULL)\n\n"
+                "## 正确SQL示例\n"
+                "1. 二维分组: SELECT DATE(entry_time) as dt, vehicle_type, COUNT(*) \n"
+                "   FROM vehicle_record \n"
+                "   WHERE entry_time >= '2026-05-01' \n"
+                "   GROUP BY dt, vehicle_type ORDER BY dt\n\n"
+                "2. 子查询+过滤: SELECT * FROM vehicle_record \n"
+                "   WHERE exit_time IS NOT NULL \n"
+                "   AND (julianday(exit_time)-julianday(entry_time))*24*60 > 180\n\n"
+                "3. HAVING: SELECT DATE(entry_time) as dt, COUNT(*) as cnt \n"
+                "   FROM vehicle_record \n"
+                "   GROUP BY dt HAVING cnt > 1500\n\n"
+                "## 安全限制\n"
+                "只读模式、最多返回1000行、超时5秒"
             ),
             "parameters": {
                 "type": "object",
