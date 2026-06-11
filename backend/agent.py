@@ -183,6 +183,8 @@ async def agent_loop(
     user_message: str,
     history: list[dict] | None = None,
     send_sse: SSESender | None = None,
+    model: str | None = None,
+    thinking_mode: str | None = None,
 ) -> str:
     """
     执行 ReAct Agent 循环。
@@ -209,12 +211,12 @@ async def agent_loop(
     for _ in range(config.MAX_ITERATIONS):
         # 工具决策阶段（非流式）
         response = await client.chat.completions.create(  # type: ignore[reportArgumentType]
-            model=config.DEEPSEEK_MODEL,
+            model=model or config.DEEPSEEK_MODEL,
             messages=messages,
             tools=TOOL_SCHEMAS,  # type: ignore[reportArgumentType]
             tool_choice="auto",
             stream=False,
-            extra_body={"thinking": {"type": config.THINKING_MODE}},
+            extra_body={"thinking": {"type": thinking_mode or config.THINKING_MODE}},
         )
 
         assistant_msg = response.choices[0].message
@@ -280,10 +282,10 @@ async def agent_loop(
         else:
             # 文本响应阶段：流式输出
             stream = await client.chat.completions.create(  # type: ignore[reportArgumentType]
-                model=config.DEEPSEEK_MODEL,
+                model=model or config.DEEPSEEK_MODEL,
                 messages=messages,
                 stream=True,
-                extra_body={"thinking": {"type": config.THINKING_MODE}},
+                extra_body={"thinking": {"type": thinking_mode or config.THINKING_MODE}},
             )
 
             full_response = ""

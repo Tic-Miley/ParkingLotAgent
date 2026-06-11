@@ -1,11 +1,16 @@
-import { useState, useRef, useEffect, KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, KeyboardEvent, useCallback } from 'react';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 
 interface ChatInputProps {
-  onSend: (text: string) => void;
+  onSend: (text: string, model?: string, thinkingMode?: string) => void;
   onStop: () => void;
   isStreaming: boolean;
 }
+
+const MODEL_OPTIONS = [
+  { value: 'deepseek-v4-flash', label: '快速', sub: 'Flash' },
+  { value: 'deepseek-v4-pro', label: '高级', sub: 'Pro' },
+] as const;
 
 export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
   const [input, setInput] = useState('');
@@ -33,6 +38,66 @@ export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
     },
   });
 
+  // 模型与推理模式
+  const [showSettings, setShowSettings] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<string>(
+    () => localStorage.getItem('parkinglot_model') || 'deepseek-v4-flash'
+  );
+  const [thinkingEnabled, setThinkingEnabled] = useState<boolean>(
+    () => localStorage.getItem('parkinglot_thinking') !== 'disabled'
+  );
+
+  const settingsRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // 点击外部关闭菜单（mousedown 阶段判断，click 阶段才关闭，避免吞掉菜单项 onClick）
+  useEffect(() => {
+    let shouldClose = false;
+    const handleMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node;
+      const inSettings = settingsRef.current?.contains(target);
+      const inMenu = menuRef.current?.contains(target);
+      shouldClose = !inSettings && !inMenu;
+    };
+    const handleClick = (e: MouseEvent) => {
+      if (shouldClose) {
+        setShowSettings(false);
+      }
+    };
+    if (showSettings) {
+      document.addEventListener('mousedown', handleMouseDown);
+      document.addEventListener('click', handleClick);
+      return () => {
+        document.removeEventListener('mousedown', handleMouseDown);
+        document.removeEventListener('click', handleClick);
+      };
+    }
+  }, [showSettings]);
+
+  // Escape 关闭菜单
+  useEffect(() => {
+    const handleKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key === 'Escape') setShowSettings(false);
+    };
+    if (showSettings) {
+      document.addEventListener('keydown', handleKey);
+      return () => document.removeEventListener('keydown', handleKey);
+    }
+  }, [showSettings]);
+
+  const handleModelChange = useCallback((model: string) => {
+    setSelectedModel(model);
+    localStorage.setItem('parkinglot_model', model);
+  }, []);
+
+  const handleThinkingToggle = useCallback(() => {
+    setThinkingEnabled(prev => {
+      const next = !prev;
+      localStorage.setItem('parkinglot_thinking', next ? 'enabled' : 'disabled');
+      return next;
+    });
+  }, []);
+
   // 录音中将实时识别文本叠加到输入框末尾
   const displayValue = isListening ? input + interimText : input;
 
@@ -50,7 +115,8 @@ export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
   const handleSend = () => {
     const trimmed = input.trim();
     if (!trimmed) return;
-    onSend(trimmed);
+    const mode = thinkingEnabled ? 'enabled' : 'disabled';
+    onSend(trimmed, selectedModel, mode);
     setInput('');
   };
 
@@ -63,7 +129,77 @@ export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
   };
 
   return (
-    <div className="border-t border-[var(--color-border)] px-4 py-3 bg-[var(--color-bg)]/95">
+    <div className="border-t border-[var(--color-border)] px-4 py-3 bg-[var(--color-bg)]/95 relative">
+      {/* 设置菜单 — 绝对定位悬浮于底栏上方 */}
+      {showSettings && (
+        <div ref={menuRef} className="absolute bottom-full left-4 right-4 mb-2 z-50">
+          <div className="max-w-3xl mx-auto">
+            <div className="inline-block bg-[var(--color-input)] border border-[var(--color-border)] rounded-xl shadow-lg p-3 min-w-[200px]">
+            {/* 模型选择 */}
+            <div className="mb-3">
+              <div className="text-[11px] text-[var(--color-text-tertiary)] mb-2 font-medium tracking-wide uppercase">
+                模型
+              </div>
+              <div className="space-y-1">
+                {MODEL_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => handleModelChange(opt.value)}
+                    className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors
+                      ${selectedModel === opt.value
+                        ? 'bg-warm-yellow/15 text-warm-yellow'
+                        : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg)]'
+                      }`}
+                  >
+                    <span className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0
+                      ${selectedModel === opt.value
+                        ? 'border-warm-yellow'
+                        : 'border-[var(--color-border)]'
+                      }`}
+                    >
+                      {selectedModel === opt.value && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-warm-yellow" />
+                      )}
+                    </span>
+                    <span className="font-medium">{opt.label}</span>
+                    <span className="text-[10px] text-[var(--color-text-tertiary)] ml-auto">{opt.sub}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 分隔线 */}
+            <div className="border-t border-[var(--color-border)] my-2" />
+
+            {/* 推理开关 */}
+            <div className="flex items-center justify-between px-1">
+              <div>
+                <div className="text-sm text-[var(--color-text-primary)] font-medium">推理</div>
+                <div className="text-[10px] text-[var(--color-text-tertiary)]">
+                  {thinkingEnabled ? '深度思考，更准确' : '快速响应'}
+                </div>
+              </div>
+              <button
+                onClick={handleThinkingToggle}
+                className={`relative w-9 h-5 rounded-full transition-colors shrink-0
+                  ${thinkingEnabled
+                    ? 'bg-warm-yellow/50'
+                    : 'bg-[var(--color-border)]'
+                  }`}
+                role="switch"
+                aria-checked={thinkingEnabled}
+              >
+                <span
+                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all
+                    ${thinkingEnabled ? 'right-0.5' : 'left-0.5'}`}
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+        </div>
+      )}
+
       {/* 语音错误提示 */}
       {speechError && (
         <div className="max-w-3xl mx-auto mb-2 px-1">
@@ -81,7 +217,24 @@ export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
         </div>
       )}
 
-      <div className="max-w-3xl mx-auto flex gap-3 items-end">
+      <div className="max-w-3xl mx-auto flex gap-3 items-center">
+        {/* 设置按钮 */}
+        <div ref={settingsRef} className="relative shrink-0">
+          <button
+            onClick={() => setShowSettings(prev => !prev)}
+            disabled={isStreaming}
+            className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all
+              ${showSettings
+                ? 'bg-warm-yellow/15 border-warm-yellow/30 text-warm-yellow'
+                : 'bg-[var(--color-input)] border-[var(--color-border)] text-[var(--color-text-tertiary)] hover:text-warm-yellow hover:border-warm-yellow/30'
+              }
+              disabled:opacity-30 disabled:cursor-not-allowed`}
+            title="模型与推理设置"
+          >
+            <GearIcon />
+          </button>
+        </div>
+
         <textarea
           ref={textareaRef}
           value={displayValue}
@@ -137,6 +290,15 @@ export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
         )}
       </div>
     </div>
+  );
+}
+
+function GearIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
   );
 }
 

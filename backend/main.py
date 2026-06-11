@@ -57,6 +57,8 @@ async def chat(request: ChatRequest):
                 user_message=request.message,
                 history=request.history,
                 send_sse=send_sse,
+                model=request.model,
+                thinking_mode=request.thinking_mode,
             )
         )
 

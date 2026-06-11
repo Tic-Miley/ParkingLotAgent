@@ -12,7 +12,7 @@ export function useChat() {
     messagesRef.current = messages;
   }, [messages]);
 
-  const sendMessage = useCallback(async (text: string) => {
+  const sendMessage = useCallback(async (text: string, model?: string, thinkingMode?: string) => {
     if (!text.trim() || isStreaming) return;
 
     const userMsg: Message = {
@@ -49,7 +49,7 @@ export function useChat() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, conversation_id: conversationIdRef.current, history }),
+        body: JSON.stringify({ message: text, conversation_id: conversationIdRef.current, history, model, thinking_mode: thinkingMode }),
         signal: controller.signal,
       });
 

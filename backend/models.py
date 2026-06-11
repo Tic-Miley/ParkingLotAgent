@@ -10,6 +10,8 @@ class ChatRequest(BaseModel):
     message: str
     conversation_id: Optional[str] = None
     history: Optional[list[dict]] = None  # 多轮对话历史 [{role, content}, ...]
+    model: Optional[str] = None  # 前端可指定模型，覆盖 .env 默认值
+    thinking_mode: Optional[str] = None  # "enabled" | "disabled"，覆盖 .env 默认值
 
 
 # ── SSE Events ────────────────────────────────────────
