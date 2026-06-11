@@ -8,8 +8,8 @@ interface ChatInputProps {
 }
 
 const MODEL_OPTIONS = [
-  { value: 'deepseek-v4-flash', label: '快速', sub: 'Flash' },
-  { value: 'deepseek-v4-pro', label: '高级', sub: 'Pro' },
+  { value: 'deepseek-v4-flash', label: '快速', sub: 'DeepSeek Flash' },
+  { value: 'deepseek-v4-pro', label: '高级', sub: 'DeepSeek Pro' },
 ] as const;
 
 export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
@@ -176,7 +176,7 @@ export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
               <div>
                 <div className="text-sm text-[var(--color-text-primary)] font-medium">推理</div>
                 <div className="text-[10px] text-[var(--color-text-tertiary)]">
-                  {thinkingEnabled ? '深度思考，更准确' : '快速响应'}
+                  {thinkingEnabled ? '深度思考，解决复杂问题' : '不生成思维链，更迅速'}
                 </div>
               </div>
               <button
@@ -217,24 +217,28 @@ export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
         </div>
       )}
 
-      <div className="max-w-3xl mx-auto flex gap-3 items-center">
-        {/* 设置按钮 */}
-        <div ref={settingsRef} className="relative shrink-0">
-          <button
-            onClick={() => setShowSettings(prev => !prev)}
-            disabled={isStreaming}
-            className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all
-              ${showSettings
-                ? 'bg-warm-yellow/15 border-warm-yellow/30 text-warm-yellow'
-                : 'bg-[var(--color-input)] border-[var(--color-border)] text-[var(--color-text-tertiary)] hover:text-warm-yellow hover:border-warm-yellow/30'
-              }
-              disabled:opacity-30 disabled:cursor-not-allowed`}
-            title="模型与推理设置"
-          >
-            <GearIcon />
-          </button>
+      {/* 三列网格：左右等宽(1fr)，中间文本框(auto)，保证文本框严格居中 */}
+      <div className="max-w-7xl mx-auto grid grid-cols-[1fr_auto_1fr] items-center">
+        {/* 左列 — 内容靠右 */}
+        <div className="flex justify-end">
+          <div ref={settingsRef} className="relative shrink-0 mr-3">
+            <button
+              onClick={() => setShowSettings(prev => !prev)}
+              disabled={isStreaming}
+              className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all
+                ${showSettings
+                  ? 'bg-warm-yellow/15 border-warm-yellow/30 text-warm-yellow'
+                  : 'bg-[var(--color-input)] border-[var(--color-border)] text-[var(--color-text-tertiary)] hover:text-warm-yellow hover:border-warm-yellow/30'
+                }
+                disabled:opacity-30 disabled:cursor-not-allowed`}
+              title="模型与推理设置"
+            >
+              <GearIcon />
+            </button>
+          </div>
         </div>
 
+        {/* 中列 — 文本框 */}
         <textarea
           ref={textareaRef}
           value={displayValue}
@@ -244,50 +248,55 @@ export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
           rows={1}
           readOnly={isListening}
           disabled={isStreaming}
-          className="flex-1 resize-none overflow-y-auto rounded-xl bg-[var(--color-input)] border border-[var(--color-border)]
+          className="w-full min-w-[24rem] resize-none overflow-y-auto rounded-xl bg-[var(--color-input)] border border-[var(--color-border)]
                      px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)]
                      focus:outline-none focus:border-warm-yellow/50 focus:ring-1 focus:ring-warm-yellow/20
                      disabled:opacity-50 transition-colors chat-textarea"
         />
 
-        {/* 麦克风按钮 — 仅 Chrome/Edge 可见 */}
-        {isSupported && (
-          <button
-            onClick={isListening ? stopListening : startListening}
-            disabled={isStreaming}
-            className={`shrink-0 w-10 h-10 rounded-full border flex items-center justify-center transition-all
-              ${isListening
-                ? 'bg-red-500/20 border-red-500/30 text-red-400 animate-pulse'
-                : 'bg-[var(--color-input)] border-[var(--color-border)] text-[var(--color-text-tertiary)] hover:text-warm-yellow hover:border-warm-yellow/30'
-              }
-              disabled:opacity-30 disabled:cursor-not-allowed`}
-            title={isListening ? '停止录音' : '语音输入'}
-          >
-            <MicIcon />
-          </button>
-        )}
+        {/* 右列 — 内容靠左 */}
+        <div className="flex justify-start">
+          <div className="flex items-center gap-3 shrink-0 ml-3">
+            {/* 麦克风按钮 — 仅 Chrome/Edge 可见 */}
+            {isSupported && (
+              <button
+                onClick={isListening ? stopListening : startListening}
+                disabled={isStreaming}
+                className={`shrink-0 w-10 h-10 rounded-full border flex items-center justify-center transition-all
+                  ${isListening
+                    ? 'bg-red-500/20 border-red-500/30 text-red-400 animate-pulse'
+                    : 'bg-[var(--color-input)] border-[var(--color-border)] text-[var(--color-text-tertiary)] hover:text-warm-yellow hover:border-warm-yellow/30'
+                  }
+                  disabled:opacity-30 disabled:cursor-not-allowed`}
+                title={isListening ? '停止录音' : '语音输入'}
+              >
+                <MicIcon />
+              </button>
+            )}
 
-        {isStreaming ? (
-          <button
-            onClick={onStop}
-            className="shrink-0 w-10 h-10 rounded-full bg-red-500/20 border border-red-500/30
-                       flex items-center justify-center text-red-400 hover:bg-red-500/30 transition-colors"
-            title="停止生成"
-          >
-            <StopIcon />
-          </button>
-        ) : (
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() || isListening}
-            className="shrink-0 w-10 h-10 rounded-full bg-warm-yellow/20 border border-warm-yellow/30
-                       flex items-center justify-center text-warm-yellow
-                       hover:bg-warm-yellow/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            title="发送"
-          >
-            <SendIcon />
-          </button>
-        )}
+            {isStreaming ? (
+              <button
+                onClick={onStop}
+                className="shrink-0 w-10 h-10 rounded-full bg-red-500/20 border border-red-500/30
+                           flex items-center justify-center text-red-400 hover:bg-red-500/30 transition-colors"
+                title="停止生成"
+              >
+                <StopIcon />
+              </button>
+            ) : (
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || isListening}
+                className="shrink-0 w-10 h-10 rounded-full bg-warm-yellow/20 border border-warm-yellow/30
+                           flex items-center justify-center text-warm-yellow
+                           hover:bg-warm-yellow/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                title="发送"
+              >
+                <SendIcon />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
