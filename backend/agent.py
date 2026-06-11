@@ -107,6 +107,78 @@ async def execute_tool(tool_name: str, arguments: dict[str, Any]) -> dict:
         return {"error": f"工具执行失败: {str(e)}"}
 
 
+# ── 工具消息生成 ──────────────────────────────────────
+
+GROUP_BY_LABELS = {
+    "vehicle_type": "按能源类型统计",
+    "floor": "按楼层统计",
+    "date": "按日统计趋势",
+    "hour": "按时段分布",
+    "day_of_week": "按星期分布",
+    "month": "按月汇总",
+}
+
+CHART_TYPE_LABELS = {"pie": "生成饼图", "line": "生成折线图", "bar": "生成柱状图"}
+
+
+def _tool_message(tool_name: str, arguments: dict) -> str:
+    """Generate a human-readable description for a tool invocation."""
+    if tool_name == "get_config":
+        return "获取停车场配置"
+
+    if tool_name == "get_vehicle":
+        plate = arguments.get("plate", "")
+        return f"查询车辆 {plate}" if plate else "查询车辆信息"
+
+    if tool_name == "query_aggregation":
+        active_only = arguments.get("active_only", True)
+        group_by = arguments.get("group_by")
+
+        if active_only and not group_by:
+            return "查询当前空余车位"
+
+        if group_by and group_by in GROUP_BY_LABELS:
+            label = GROUP_BY_LABELS[group_by]
+            date_from = arguments.get("date_from")
+            date_to = arguments.get("date_to")
+            if date_from and date_to:
+                if date_from == date_to:
+                    label += f" ({date_from})"
+                else:
+                    label += f" ({date_from} ~ {date_to})"
+            elif date_from:
+                label += f" ({date_from}起)"
+            return label
+
+        if not active_only and not group_by:
+            return "查询历史汇总统计"
+
+        return "执行聚合查询"
+
+    if tool_name == "sql_query":
+        query = arguments.get("query", "")
+        if query:
+            upper = query.upper()
+            if "COUNT" in upper and "GROUP BY" in upper:
+                return "执行分组统计查询"
+            if "AVG" in upper:
+                return "执行平均值查询"
+            if "WHERE" in upper and "NULL" in upper:
+                return "查询在场车辆"
+        return "执行自定义SQL查询"
+
+    if tool_name == "render_chart":
+        option = arguments.get("option", {})
+        if isinstance(option, dict):
+            series = option.get("series", [{}])
+            if isinstance(series, list) and len(series) > 0:
+                chart_type = series[0].get("type", "") if isinstance(series[0], dict) else ""
+                return CHART_TYPE_LABELS.get(chart_type, "生成统计图表")
+        return "生成统计图表"
+
+    return f"执行 {tool_name}"
+
+
 async def agent_loop(
     user_message: str,
     history: list[dict] | None = None,
@@ -164,7 +236,7 @@ async def agent_loop(
                         tool_name=tool_name,
                         status="running",
                         arguments=arguments,
-                        message=f"正在查询{tool_name}...",
+                        message=_tool_message(tool_name, arguments),
                     )
 
                 # 执行工具
@@ -176,6 +248,8 @@ async def agent_loop(
                         await send_sse.tool_call(
                             tool_name=tool_name,
                             status="error",
+                            arguments=arguments,
+                            message=_tool_message(tool_name, arguments),
                             error=result["error"],
                         )
                     else:
@@ -184,6 +258,8 @@ async def agent_loop(
                         await send_sse.tool_call(
                             tool_name=tool_name,
                             status="done",
+                            arguments=arguments,
+                            message=_tool_message(tool_name, arguments),
                             result_preview=preview,
                         )
 

@@ -19,6 +19,7 @@ export interface ToolCallEvent {
   toolName: string;
   status: 'running' | 'done' | 'error';
   arguments?: Record<string, unknown>;
+  message?: string;
   resultPreview?: string;
   error?: string;
 }

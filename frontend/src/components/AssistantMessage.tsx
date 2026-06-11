@@ -16,8 +16,8 @@ export function AssistantMessage({ message, onCopy }: AssistantMessageProps) {
         {/* Tool calls */}
         {message.toolCalls.length > 0 && (
           <div className="mb-3">
-            {message.toolCalls.map((tc, i) => (
-              <ToolCallCard key={`${tc.toolName}-${i}`} toolCall={tc} />
+            {message.toolCalls.map((tc) => (
+              <ToolCallCard key={`${tc.toolName}-${tc.status}-${tc.message || ''}`} toolCall={tc} />
             ))}
           </div>
         )}

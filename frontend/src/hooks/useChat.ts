@@ -122,22 +122,33 @@ export function useChat() {
               const toolCall: ToolCallEvent = {
                 toolName: data.tool_name as string,
                 status: data.status as ToolCallEvent['status'],
+                message: data.message as string | undefined,
                 arguments: data.arguments as Record<string, unknown> | undefined,
                 resultPreview: data.result_preview as string | undefined,
                 error: data.error as string | undefined,
               };
-              // Replace or append tool call
+              // Find the last running entry with the same toolName.
+              // For 'running' events: always append a new entry (a new invocation).
+              // For 'done'/'error' events: update the last running entry with the same name.
               const existingIdx = m.toolCalls.findIndex(
-                tc => tc.toolName === toolCall.toolName &&
-                  (tc.status === 'running' || tc.status === toolCall.status)
+                tc => tc.toolName === toolCall.toolName && tc.status === 'running'
               );
               const newToolCalls = [...m.toolCalls];
               if (existingIdx >= 0 && toolCall.status !== 'running') {
-                newToolCalls[existingIdx] = toolCall;
+                // Merge: preserve fields from the running entry (arguments, message)
+                // that done/error events may not carry, then override with new fields.
+                newToolCalls[existingIdx] = { ...newToolCalls[existingIdx], ...toolCall };
               } else if (existingIdx < 0) {
                 newToolCalls.push(toolCall);
               }
-              return { ...m, toolCalls: newToolCalls };
+              // Sort toolCalls: running entries come last so the newest invocation is always visible.
+              // Stable sort preserves relative order of same-status entries.
+              const sorted = [...newToolCalls].sort((a, b) => {
+                if (a.status === 'running' && b.status !== 'running') return 1;
+                if (a.status !== 'running' && b.status === 'running') return -1;
+                return 0;
+              });
+              return { ...m, toolCalls: sorted };
             }
 
             case 'text': {

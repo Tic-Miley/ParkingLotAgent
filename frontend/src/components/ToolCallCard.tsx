@@ -5,21 +5,113 @@ interface ToolCallCardProps {
   toolCall: ToolCallEvent;
 }
 
+// ── 基础标签映射 (v2 工具) ────────────────────────────
+
 const TOOL_LABELS: Record<string, string> = {
-  get_current_vacancy: '查询空余车位',
-  get_nev_ratio: '查询新能源车占比',
-  get_trend: '查询停车趋势',
-  get_floor_status: '查询楼层状态',
-  get_hourly_distribution: '查询时段分布',
-  get_vehicle_detail: '查询车辆详情',
-  get_summary_stats: '查询汇总统计',
-  sql_query: '执行数据查询',
+  get_config: '获取停车场配置',
+  query_aggregation: '执行聚合查询',
+  get_vehicle: '查询车辆信息',
+  sql_query: '执行SQL查询',
   render_chart: '生成统计图表',
 };
 
+// ── 参数感知标签推导 ──────────────────────────────────
+
+const GROUP_BY_LABELS: Record<string, string> = {
+  vehicle_type: '按能源类型统计',
+  floor: '按楼层统计',
+  date: '按日统计趋势',
+  hour: '按时段分布',
+  day_of_week: '按星期分布',
+  month: '按月汇总',
+};
+
+function deriveLabel(toolName: string, args?: Record<string, unknown>): string | null {
+  switch (toolName) {
+    case 'query_aggregation': {
+      // 无 group_by + active_only → 当前空余车位
+      if (args?.active_only === true && !args?.group_by) {
+        return '查询当前空余车位';
+      }
+      // 有 group_by
+      const gb = args?.group_by as string | undefined;
+      if (gb && GROUP_BY_LABELS[gb]) {
+        let label = GROUP_BY_LABELS[gb];
+        // 附加日期范围
+        if (args?.date_from) {
+          const from = args.date_from as string;
+          const to = args.date_to as string;
+          if (from && to && from === to) {
+            label += ` (${from})`;
+          } else if (from && to) {
+            label += ` (${from} ~ ${to})`;
+          } else if (from) {
+            label += ` (${from}起)`;
+          }
+        }
+        return label;
+      }
+      // active_only=false 无 group_by → 历史汇总
+      if (args?.active_only === false && !args?.group_by) {
+        return '查询历史汇总统计';
+      }
+      return null; // fallback to TOOL_LABELS
+    }
+
+    case 'render_chart': {
+      try {
+        const option = args?.option as Record<string, unknown> | undefined;
+        const series = option?.series as Array<Record<string, unknown>> | undefined;
+        const chartType = series?.[0]?.type as string | undefined;
+        if (chartType === 'pie') return '生成饼图';
+        if (chartType === 'line') return '生成折线图';
+        if (chartType === 'bar') return '生成柱状图';
+      } catch { /* ignore parse errors */ }
+      return null;
+    }
+
+    case 'get_vehicle': {
+      const plate = args?.plate as string | undefined;
+      if (plate) return `查询车辆 ${plate}`;
+      return null;
+    }
+
+    case 'sql_query': {
+      // 尝试从 SQL 中提取关键信息
+      const query = args?.query as string | undefined;
+      if (query) {
+        const upper = query.toUpperCase();
+        if (upper.includes('COUNT') && upper.includes('GROUP BY')) {
+          return '执行分组统计查询';
+        }
+        if (upper.includes('AVG') || upper.includes('AVERAGE')) {
+          return '执行平均值查询';
+        }
+        if (upper.includes('WHERE') && upper.includes('NULL')) {
+          return '查询在场车辆';
+        }
+        return '执行自定义SQL查询';
+      }
+      return null;
+    }
+
+    default:
+      return null;
+  }
+}
+
+// ── 组件 ──────────────────────────────────────────────
+
 export function ToolCallCard({ toolCall }: ToolCallCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const label = TOOL_LABELS[toolCall.toolName] || toolCall.toolName;
+
+  // 标签优先级: 后端 message > 前端参数感知 > 静态映射 > 原始名称
+  const label =
+    toolCall.message ||
+    deriveLabel(toolCall.toolName, toolCall.arguments) ||
+    TOOL_LABELS[toolCall.toolName] ||
+    toolCall.toolName;
+
   const isRunning = toolCall.status === 'running';
   const isError = toolCall.status === 'error';
 
