@@ -129,7 +129,7 @@ export function ChatInput({ onSend, onStop, isStreaming }: ChatInputProps) {
   };
 
   return (
-    <div className="border-t border-[var(--color-border)] px-4 py-3 bg-[var(--color-bg)]/95 relative">
+    <div className="sticky bottom-0 z-10 border-t border-[var(--color-border)] px-4 py-3 bg-[var(--color-bg)]/80 backdrop-blur-sm">
       {/* 设置菜单 — 绝对定位悬浮于底栏上方 */}
       {showSettings && (
         <div ref={menuRef} className="absolute bottom-full left-4 right-4 mb-2 z-50">
